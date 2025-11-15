@@ -15,7 +15,7 @@ router.post("/register", async (req, res) => {
     .get();
 
   if (!snapshot.empty) {
-    return res.json({ error: "Kullanıcı zaten var" });
+    return res.status(400).json({ error: "Kullanıcı zaten var" });
   }
 
   const hashed = await bcrypt.hash(password, 10);
@@ -25,7 +25,7 @@ router.post("/register", async (req, res) => {
     password: hashed,
   });
 
-  return res.json({ success: true, userId: ref.id });
+  return res.status(201).json({ success: true, userId: ref.id });
 });
 
 
@@ -38,14 +38,14 @@ router.post("/login", async (req, res) => {
     .get();
 
   if (snapshot.empty) {
-    return res.json({ error: "Kullanıcı bulunamadı" });
+    return res.status(401).json({ error: "Kullanıcı bulunamadı" });
   }
 
   const user = snapshot.docs[0];
   const userData = user.data();
 
   const match = await bcrypt.compare(password, userData.password);
-  if (!match) return res.json({ error: "Yanlış şifre" });
+  if (!match) return res.status(401).json({ error: "Yanlış şifre" });
 
   const token = jwt.sign(
     {
@@ -56,9 +56,9 @@ router.post("/login", async (req, res) => {
     { expiresIn: "7d" }
   );
 
-  return res.json({
+  return res.status(200).json({
     success: true,
-    token,
+    token
   });
 });
 
